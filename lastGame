@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="margin:0;padding:0;">
+<script>
+  (async () => {
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+    const targetUrl = 'https://www.dhlottery.co.kr/gameResult.do?method=byWin';
+  
+    try {
+      const res = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+  
+      const content = doc.querySelector('meta#desc[name="description"]').content;
+      const s = content.indexOf(' ');
+      const e = content.indexOf('회');
+      const lastGame = content.substring(s + 1, e);
+  
+      // 페이지 본문에 JSON으로 출력
+      document.body.textContent = JSON.stringify({ lastGame });
+    } catch (err) {
+      document.body.textContent = JSON.stringify({ error: '데이터를 가져오는 중 오류 발생' });
+      console.error(err);
+    }
+  })();
+</script>
+</body>
+</html>
