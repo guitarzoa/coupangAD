@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>오늘의 로또 번호</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    h1 { color: #2c3e50; }
+    #lottoNums { margin-top: 10px; font-size: 1.2em; }
+    #refresh { margin-top: 20px; padding: 8px 16px; }
+  </style>
+</head>
+<body>
+  <h1>오늘의 로또 번호</h1>
+  <div id="lottoNums">로딩 중...</div>
+  <button id="refresh">다시 가져오기</button>
+
+  <script>
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+    const targetUrl = 'https://www.dhlottery.co.kr/common.do?method=main';
+
+    async function fetchLotto() {
+      document.getElementById('lottoNums').textContent = '로딩 중...';
+      try {
+        // AllOrigins 프록시를 통해 실제 페이지 HTML을 가져옴
+        const res = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+        const html = await res.text();
+
+        // 가져온 HTML 문자열을 파싱
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Jsoup 예제의 #numView 요소와 동일하게 선택
+        const text = doc.querySelector('#numView').innerText.trim();
+        const parts = text.split(/\s+/);
+
+        // 첫 번째(회차)와 여덟 번째(보너스) 번호는 제외
+        const nums = parts.filter((_, i) => i !== 0 && i !== 7);
+
+        // 화면에 표시
+        document.getElementById('lottoNums').textContent = nums.join(', ');
+      } catch (err) {
+        document.getElementById('lottoNums').textContent = '데이터를 가져오는 중 오류가 발생했습니다.';
+        console.error(err);
+      }
+    }
+
+    document.getElementById('refresh').addEventListener('click', fetchLotto);
+
+    // 페이지 로드 시 자동 호출
+    fetchLotto();
+  </script>
+</body>
+</html>
